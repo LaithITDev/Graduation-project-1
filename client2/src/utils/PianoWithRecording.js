@@ -20,27 +20,13 @@ class PianoWithRecording extends React.Component {
     });
   };
 
-  onStopNoteInput = (midiNumber, { prevActiveNotes }) => {
+  onStopNoteInput = () => {
     if (this.state.notesRecorded === false) {
-      this.recordNotes(prevActiveNotes, this.state.noteDuration);
       this.setState({
         notesRecorded: true,
         noteDuration: DEFAULT_NOTE_DURATION,
       });
     }
-  };
-
-  recordNotes = (midiNumbers, duration) => {
-    if (this.props.recording.mode !== 'RECORDING') {
-      return;
-    }
-    const newEvents = midiNumbers.map(midiNumber => {
-      return {
-        midiNumber,
-        time: this.props.recording.currentTime,
-        duration: duration,
-      };
-    });
   };
 
   render() {

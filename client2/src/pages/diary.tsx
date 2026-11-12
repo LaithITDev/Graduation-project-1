@@ -90,9 +90,9 @@ export default function Diary() {
       
       <Nav />
       <Container maxW="container.lg" mt={12}>
-         <center>
+         <Center>
          <Heading fontSize="50px" as="h1" mb={20}>NeuroNote Diary</Heading>
-         </center>
+         </Center>
             <Text  fontSize="30px" fontWeight="bold" mb={16}>Please slide the emojis below to indicate your level of satisfaction with NeuroNote.</Text>
             <Box as="form" onSubmit={handleSubmit}>
             <Box mb={4}>
@@ -169,9 +169,9 @@ export default function Diary() {
                <FormLabel fontSize="25px" htmlFor="comments">Do you have any comments or suggestions for NeuroNote?</FormLabel>
                <Textarea   height="320px" fontSize="25px" name="comments" id="comments" value={comments} onChange={(event) => setComments(event.target.value)} border="2px" />
             </Box>
-            <center>
+            <Center>
             <Button fontSize="25px" type="submit">Submit</Button>
-            </center>
+            </Center>
             </Box>
       </Container>
    </Box>

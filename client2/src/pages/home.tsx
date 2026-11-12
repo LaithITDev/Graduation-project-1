@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import { KeyboardShortcuts, MidiNumbers } from "react-piano";
 import _ from "lodash";
 import "react-piano/dist/styles.css";
@@ -14,7 +13,6 @@ import {
   Flex,
   Heading,
   Select,
-  Stack,
   Text,
 } from "@chakra-ui/react";
 import Nav from "../components/NavBar";
