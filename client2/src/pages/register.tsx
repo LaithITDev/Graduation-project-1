@@ -89,6 +89,7 @@ export default function Register() {
                         autoComplete="new-password"
                         id="password"
                         name="password"
+                        minLength={8}
                         onChange={(event) => setPassword(event.target.value)}
                         placeholder="Create a password"
                         type="password"

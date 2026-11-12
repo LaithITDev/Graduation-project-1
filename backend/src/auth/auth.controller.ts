@@ -7,6 +7,7 @@ import {
     Get,
     UseGuards,
     Request,
+    UnauthorizedException,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "./auth.guard";
@@ -48,6 +49,11 @@ export class AuthController {
             iat: number;
             exp: number;
         };
-        return this.userService.findOne(payload.username);
+        const user = await this.userService.findOne(payload.username);
+        if (!user) {
+            throw new UnauthorizedException();
+        }
+        const { password, ...result } = user;
+        return result;
     }
 }

@@ -2,6 +2,7 @@
   base = "client2"
   command = "npm run build"
   publish = "build"
+  functions = "netlify/functions"
 
 [[redirects]]
   from = "/*"

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { ChakraProvider } from "@chakra-ui/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -60,7 +60,14 @@ test("redirects visitors from the home page to registration", async () => {
   expect(screen.queryByRole("heading", { name: "Home" })).not.toBeInTheDocument();
 });
 
-test("allows a signed-in visitor to access protected pages", () => {
+test("allows a signed-in visitor to access protected pages", async () => {
+  const originalFetch = global.fetch;
+  const fetchMock = jest.fn().mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: async () => ({ id: 1, username: "laith", email: "laith@example.com" }),
+  } as Response);
+  global.fetch = fetchMock as typeof fetch;
   localStorage.setItem(
     "neuronnote.session",
     JSON.stringify({
@@ -69,7 +76,7 @@ test("allows a signed-in visitor to access protected pages", () => {
     })
   );
 
-  render(
+  const { unmount } = render(
     <MemoryRouter initialEntries={["/"]}>
       <Routes>
         <Route
@@ -84,6 +91,20 @@ test("allows a signed-in visitor to access protected pages", () => {
     </MemoryRouter>
   );
 
-  expect(screen.getByRole("heading", { name: "Home" })).toBeInTheDocument();
-  localStorage.clear();
+  try {
+    expect(screen.getByRole("status")).toHaveTextContent("Checking your session");
+    expect(
+      await screen.findByRole("heading", { name: "Home" })
+    ).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/auth/me",
+      expect.objectContaining({
+        headers: { Authorization: "Bearer test-token" },
+      })
+    );
+  } finally {
+    unmount();
+    global.fetch = originalFetch;
+    localStorage.clear();
+  }
 });

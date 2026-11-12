@@ -10,7 +10,11 @@ export type AuthSession = {
 };
 
 const SESSION_KEY = "neuronnote.session";
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:7070";
+const API_URL =
+  process.env.NODE_ENV === "development"
+    ? process.env.REACT_APP_API_URL?.replace(/\/+$/, "")
+    : undefined;
+const AUTH_URL = API_URL ? `${API_URL}/auth` : "/api/auth";
 
 export function readSession(): AuthSession | null {
   const storedSession = window.localStorage.getItem(SESSION_KEY);
@@ -18,11 +22,20 @@ export function readSession(): AuthSession | null {
 
   try {
     const session = JSON.parse(storedSession) as AuthSession;
-    if (session.token && session.user?.username) return session;
+    if (
+      typeof session.token === "string" &&
+      session.token.length > 0 &&
+      Number.isSafeInteger(session.user?.id) &&
+      typeof session.user?.username === "string" &&
+      typeof session.user?.email === "string"
+    ) {
+      return session;
+    }
   } catch {
-    window.localStorage.removeItem(SESSION_KEY);
+    clearSession();
   }
 
+  clearSession();
   return null;
 }
 
@@ -34,13 +47,52 @@ export function clearSession(): void {
   window.localStorage.removeItem(SESSION_KEY);
 }
 
+export async function verifySession(): Promise<boolean> {
+  const session = readSession();
+  if (!session) return false;
+
+  let response: Response;
+  try {
+    response = await fetch(`${AUTH_URL}/me`, {
+      headers: { Authorization: `Bearer ${session.token}` },
+    });
+  } catch {
+    throw new Error("Could not verify your session. Check your connection and retry.");
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    clearSession();
+    return false;
+  }
+  if (!response.ok) {
+    throw new Error("Could not verify your session. Please try again.");
+  }
+
+  const result = await response.json().catch(() => null);
+  if (
+    !result ||
+    !Number.isSafeInteger(result.id) ||
+    typeof result.username !== "string" ||
+    typeof result.email !== "string"
+  ) {
+    clearSession();
+    return false;
+  }
+
+  saveSession({
+    token: session.token,
+    user: { id: result.id, username: result.username, email: result.email },
+  });
+  return true;
+}
+
 async function submitAuthRequest(
   endpoint: "login" | "register",
   values: Record<string, string>
 ): Promise<AuthSession> {
   let response: Response;
   try {
-    response = await fetch(`${API_URL}/auth/${endpoint}`, {
+    response = await fetch(`${AUTH_URL}/${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
