@@ -7,7 +7,7 @@
 
 ## Live demo
 
-[Open NeuroNote](https://6af5de18f07d15d072cd4c77--dapper-begonia-40055b.netlify.app/)
+[Open NeuroNote](https://dapper-begonia-40055b.netlify.app/register)
 
 # Setting up the project
 
