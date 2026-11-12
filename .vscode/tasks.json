@@ -1,0 +1,373 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Verify Node.js runtime",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName; if (-not $nodeDir) { Write-Output 'Node.js user-local folder not found'; exit 2 }; & (Join-Path $nodeDir 'node.exe') --version; & (Join-Path $nodeDir 'npm.cmd') --version"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install project dependencies",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location backend; & (Join-Path $nodeDir 'npm.cmd') ci; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; Set-Location ..\\client2; & (Join-Path $nodeDir 'npm.cmd') ci; exit $LASTEXITCODE"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Start NeuroNote backend",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location backend; & (Join-Path $nodeDir 'npm.cmd') run start:dev"
+			],
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc-watch"
+			]
+		},
+		{
+			"label": "Start NeuroNote frontend",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') start"
+			],
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc-watch"
+			]
+		},
+		{
+			"label": "Test authentication screens",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') test -- --watchAll=false --runInBand"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Retest authentication screens",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') test -- --watchAll=false --runInBand"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build NeuroNote client",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') run build"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Identify API port owner",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$listener = Get-NetTCPConnection -State Listen -LocalPort 7070 -ErrorAction SilentlyContinue | Select-Object -First 1; if ($listener) { Get-CimInstance Win32_Process -Filter \"ProcessId = $($listener.OwningProcess)\" | Select-Object ProcessId,Name,CommandLine } else { Write-Output 'Nothing is listening on 7070' }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect processes listening on API port",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$listener = Get-NetTCPConnection -State Listen -LocalPort 7070 -ErrorAction SilentlyContinue | Select-Object -First 1; if ($listener) { Get-CimInstance -ClassName Win32_Process -Filter ('ProcessId = ' + $listener.OwningProcess) | Select-Object ProcessId,Name,CommandLine } else { Write-Output 'Nothing is listening on 7070' }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Find process on 7070",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-NetTCPConnection -State Listen -LocalPort 7070 -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty OwningProcess | ForEach-Object { Get-Process -Id $_ | Select-Object Id,ProcessName,Path }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect Node API process",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$pidOnPort = Get-NetTCPConnection -State Listen -LocalPort 7070 -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty OwningProcess; Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -eq $pidOnPort } | Select-Object ProcessId,CommandLine"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Restart NeuroNote API",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; $pidOnPort = Get-NetTCPConnection -State Listen -LocalPort 7070 -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty OwningProcess; if ($pidOnPort) { Stop-Process -Id $pidOnPort -Force }; Set-Location backend; & (Join-Path $nodeDir 'npm.cmd') run start:dev"
+			],
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc-watch"
+			]
+		},
+		{
+			"label": "Check API listener after restart",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$pidOnPort = Get-NetTCPConnection -State Listen -LocalPort 7070 -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty OwningProcess; if ($pidOnPort) { Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -eq $pidOnPort } | Select-Object ProcessId,CommandLine } else { Write-Output 'No listener on 7070' }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "List NeuroNote backend processes",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'Graduation-project-laith.*backend|backend.*nest start|backend.*dist\\\\main' } | Select-Object ProcessId,ParentProcessId,CommandLine"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect Node process tree",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-CimInstance Win32_Process | Where-Object Name -eq 'node.exe' | Select-Object ProcessId,ParentProcessId,CommandLine"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Identify backend process parents",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Process -Id 10688,17004,10724,4732 -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,Path"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Clear duplicate NeuroNote APIs",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Stop-Process -Id 15444,10164,2456,10688,17004,4732 -Force -ErrorAction SilentlyContinue; Get-NetTCPConnection -State Listen -LocalPort 7070 -ErrorAction SilentlyContinue | Select-Object LocalPort,OwningProcess"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Start updated NeuroNote backend",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location backend; & (Join-Path $nodeDir 'npm.cmd') run start:dev"
+			],
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc-watch"
+			]
+		},
+		{
+			"label": "Build dashboard mood component",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') run build"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Final dashboard build",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') run build"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Validate connection-driven dashboard",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') run build"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Final connection dashboard build",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') run build"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check client TypeScript declarations",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') exec -- tsc --noEmit --pretty false"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build compact dashboard and CSS types",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') run build"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify final TypeScript check",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') exec -- tsc --noEmit --pretty false"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Reproduce CSS side-effect diagnostic",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & .\\node_modules\\.bin\\tsc.cmd --version; & .\\node_modules\\.bin\\tsc.cmd --noEmit --noUncheckedSideEffectImports --pretty false"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check CSS import with current TypeScript",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') exec --yes --package typescript@5.9.3 -- tsc --noEmit --noUncheckedSideEffectImports --pretty false"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Confirm TypeScript 5.9 check",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npx.cmd') --yes --package typescript@5.9.3 tsc --version; & (Join-Path $nodeDir 'npx.cmd') --yes --package typescript@5.9.3 tsc --noEmit --noUncheckedSideEffectImports --pretty false"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build auth stylesheet import",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npm.cmd') run build"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check side-effect imports with TS 5.9",
+			"type": "shell",
+			"command": "powershell.exe",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$nodeDir = Get-ChildItem \"$env:LOCALAPPDATA\\Programs\\nodejs\" -Directory | Select-Object -First 1 -ExpandProperty FullName; $env:Path = \"$nodeDir;$env:Path\"; Set-Location client2; & (Join-Path $nodeDir 'npx.cmd') --yes --package typescript@5.9.3 tsc --noEmit --noUncheckedSideEffectImports --pretty false"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}
