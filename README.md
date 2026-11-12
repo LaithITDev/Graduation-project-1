@@ -5,6 +5,10 @@
 
 **Our app aims to simulate taking input from an EEG device to convert brain signals into music, allowing users to choose their preferred instrument from a list of options.**
 
+## Live demo
+
+[Open NeuroNote](https://6af5de18f07d15d072cd4c77--dapper-begonia-40055b.netlify.app/)
+
 # Setting up the project
 
 ## Prerequisites
