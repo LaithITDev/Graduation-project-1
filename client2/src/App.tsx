@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 import Register from "./pages/register";
 import Login from "./pages/login";
 import { ChakraProvider } from "@chakra-ui/react";
@@ -8,6 +8,7 @@ import Home from "./pages/home";
 import Diary from "./pages/diary";
 import Feedback from "./pages/feedback";
 import ThankYou from "./pages/thankyou";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -16,11 +17,39 @@ function App() {
         <Routes>
           <Route path="/login" Component={Login} />
           <Route path="/register" Component={Register} />
-          <Route path="/" Component={Home} />
-          <Route path="/diary" Component={Diary} />
-          <Route path="/feedback" Component={Feedback} />
-          <Route path="/thankyou" Component={ThankYou} />
-
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/diary"
+            element={
+              <ProtectedRoute>
+                <Diary />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/feedback"
+            element={
+              <ProtectedRoute>
+                <Feedback />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/thankyou"
+            element={
+              <ProtectedRoute>
+                <ThankYou />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/register" replace />} />
         </Routes>
       </Router>
     </ChakraProvider>
