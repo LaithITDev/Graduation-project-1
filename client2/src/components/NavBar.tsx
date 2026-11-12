@@ -1,104 +1,91 @@
-import { ReactNode } from "react";
 import {
   Box,
   Flex,
   Avatar,
-  Link,
   Button,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
-  MenuDivider,
-  useDisclosure,
   useColorModeValue,
   Stack,
   useColorMode,
-  Center,
   Image,
 } from "@chakra-ui/react";
 import { MoonIcon, SunIcon } from "@chakra-ui/icons";
-import { Link as RouterLink } from "react-router-dom";
-
-const NavLink = ({ children }: { children: ReactNode }) => (
-  <Link
-    px={2}
-    py={1}
-    rounded={"md"}
-    _hover={{
-      textDecoration: "none",
-      bg: useColorModeValue("gray.200", "gray.700"),
-    }}
-    href={"#"}
-  >
-    {children}
-  </Link>
-);
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { AuthSession, clearSession, readSession } from "../utils/auth";
 
 export default function Nav() {
   const { colorMode, toggleColorMode } = useColorMode();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const navigate = useNavigate();
+  const [session, setSession] = useState<AuthSession | null>(() => readSession());
+
+  function handleLogout() {
+    clearSession();
+    setSession(null);
+    navigate("/login");
+  }
+
   return (
     <>
       <Box bg={useColorModeValue("gray.100", "gray.900")} px={4}>
         <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
-          <Box boxSize="sm">
-            {colorMode === "light" ? 
-                <Image src="/logo-black.svg" alt="Dan Abramov" height={'100%'} width={'100%'}/> :
-                <Image src="/logo-white.svg" alt="Dan Abramov" height={'100%'} width={'100%'}/>
-            }
+          <Box as={RouterLink} to="/" display="flex" alignItems="center">
+            <Image
+              src={colorMode === "light" ? "/logo-black.svg" : "/logo-white.svg"}
+              alt="NeuroNote home"
+              height="36px"
+              width="150px"
+              objectFit="contain"
+            />
           </Box>
 
           <Flex alignItems={"center"}>
             <Stack direction={"row"} spacing={7}>
-              <Button onClick={toggleColorMode}>
+              <Button
+                aria-label={`Switch to ${colorMode === "light" ? "dark" : "light"} mode`}
+                onClick={toggleColorMode}
+                variant="ghost"
+              >
                 {colorMode === "light" ? <MoonIcon /> : <SunIcon />}
               </Button>
 
-              <Link as={RouterLink} to="/feedback">
-                <Button colorScheme="teal" variant="outline">
-                  Feedback
-                </Button>
-              </Link>
+              <Button as={RouterLink} to="/feedback" colorScheme="teal" variant="outline">
+                Feedback
+              </Button>
 
-              <Link as={RouterLink} to="/diary">
-                <Button colorScheme="teal" variant="outline">
-                  Diary
-                </Button>
-              </Link>
+              <Button as={RouterLink} to="/diary" colorScheme="teal" variant="outline">
+                Diary
+              </Button>
 
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  rounded={"full"}
-                  variant={"link"}
-                  cursor={"pointer"}
-                  minW={0}
-                >
-                  <Avatar
-                    size={"sm"}
-                    src={"https://avatars.dicebear.com/api/male/username.svg"}
-                  />
-                </MenuButton>
-                <MenuList alignItems={"center"}>
-                  <br />
-                  <Center>
-                    <Avatar
-                      size={"2xl"}
-                      src={"https://avatars.dicebear.com/api/male/username.svg"}
-                    />
-                  </Center>
-                  <br />
-                  <Center>
-                    <p>Username</p>
-                  </Center>
-                  <br />
-                  <MenuDivider />
-                  <MenuItem>Your Servers</MenuItem>
-                  <MenuItem>Account Settings</MenuItem>
-                  <MenuItem>Logout</MenuItem>
-                </MenuList>
-              </Menu>
+              {session ? (
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    aria-label={`Account menu for ${session.user.username}`}
+                    rounded="full"
+                    variant="ghost"
+                    minW={0}
+                  >
+                    <Avatar size="sm" name={session.user.username} />
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem isDisabled>{session.user.username}</MenuItem>
+                    <MenuItem onClick={handleLogout}>Log out</MenuItem>
+                  </MenuList>
+                </Menu>
+              ) : (
+                <>
+                  <Button as={RouterLink} to="/login" variant="ghost">
+                    Sign in
+                  </Button>
+                  <Button as={RouterLink} to="/register" colorScheme="teal">
+                    Create account
+                  </Button>
+                </>
+              )}
             </Stack>
           </Flex>
         </Flex>

@@ -10,15 +10,18 @@ import {
   Card,
   CardBody,
   Center,
+  Collapse,
   Flex,
   Heading,
   Select,
   Stack,
+  Text,
 } from "@chakra-ui/react";
 import Nav from "../components/NavBar";
+import HappinessLevel from "../components/HappinessLevel";
 import DimensionsProvider from "../utils/DimensionsProvider";
 import PianoWithRecording from "../utils/PianoWithRecording";
-import { Component, useState } from "react";
+import { Component } from "react";
 import { CiPlay1 } from "react-icons/ci";
 import { BsStop } from "react-icons/bs";
 const audioContext = new window.AudioContext();
@@ -47,6 +50,8 @@ type Recording = {
 type AppState = {
   recording: Recording;
   instrument: string;
+  deviceConnected: boolean;
+  playbackStartedAt: number | null;
 };
 const firstNote = MidiNumbers.fromNote("c3");
 const lastNote = MidiNumbers.fromNote("f5");
@@ -94,6 +99,8 @@ export default class Home extends Component<{}, AppState> {
         currentEvents: [],
       },
       instrument: "acoustic_grand_piano",
+      deviceConnected: false,
+      playbackStartedAt: null,
     };
   }
   setRecording = (value: Partial<Recording>): void => {
@@ -106,10 +113,20 @@ export default class Home extends Component<{}, AppState> {
     this.scheduledEvents.forEach((scheduledEvent) => {
       clearTimeout(scheduledEvent);
     });
+    this.scheduledEvents = [];
+    this.setState({ playbackStartedAt: null });
     this.setRecording({
       mode: "RECORDING",
       currentEvents: [],
     });
+  };
+
+  toggleDeviceConnection = (): void => {
+    const deviceConnected = !this.state.deviceConnected;
+    if (!deviceConnected) {
+      this.onClickStop();
+    }
+    this.setState({ deviceConnected });
   };
 
   getRecordingEndTime = (): number => {
@@ -122,8 +139,15 @@ export default class Home extends Component<{}, AppState> {
   };
 
   onClickPlay = (): void => {
+    this.scheduledEvents.forEach((scheduledEvent) => {
+      clearTimeout(scheduledEvent);
+    });
+    this.scheduledEvents = [];
+    const playbackStartedAt = Date.now();
+    this.setState({ playbackStartedAt });
     this.setRecording({
       mode: "PLAYING",
+      currentEvents: [],
     });
     const startAndEndTimes = _.uniq(
       _.flatMap(this.state.recording.events, (event) => [
@@ -132,21 +156,16 @@ export default class Home extends Component<{}, AppState> {
       ])
     );
     startAndEndTimes.forEach((time) => {
-      this.scheduledEvents.push(
-        setTimeout(() => {
-          const currentEvents = this.state.recording.events.filter((event) => {
-            return event.time <= time && event.time + event.duration > time;
-          });
-          this.setRecording({
-            currentEvents,
-          });
-        }, time * 1000)
-      );
+      this.scheduledEvents.push(setTimeout(() => {
+        const currentEvents = this.state.recording.events.filter((event) => {
+          return event.time <= time && event.time + event.duration > time;
+        });
+        this.setRecording({ currentEvents });
+      }, time * 1000));
     });
-    // Stop at the end
-    setTimeout(() => {
+    this.scheduledEvents.push(setTimeout(() => {
       this.onClickStop();
-    }, this.getRecordingEndTime() * 1000);
+    }, this.getRecordingEndTime() * 1000));
   };
   changeInstrument = (event: string): void => {
     this.setState({
@@ -162,13 +181,34 @@ export default class Home extends Component<{}, AppState> {
             Jam Session 🎹
           </Heading>
         </Center>
-        <Card width="fit-content" ml={4}>
+        <Card ml={4} width="fit-content">
           <CardBody>
-            Device connection status:{" "}
-            <Badge colorScheme="green">Connected</Badge>
+            <Flex align="center" gap={3} wrap="wrap">
+              <Text fontSize="sm" fontWeight="semibold">
+                Device status
+              </Text>
+              <Badge colorScheme={this.state.deviceConnected ? "green" : "red"}>
+                {this.state.deviceConnected ? "CONNECTED" : "NOT CONNECTED"}
+              </Badge>
+              <Button
+                aria-pressed={this.state.deviceConnected}
+                colorScheme={this.state.deviceConnected ? "gray" : "teal"}
+                onClick={this.toggleDeviceConnection}
+                size="sm"
+                variant={this.state.deviceConnected ? "outline" : "solid"}
+              >
+                {this.state.deviceConnected ? "Disconnect" : "Connect device"}
+              </Button>
+            </Flex>
           </CardBody>
         </Card>
-        <Box w="100%" h="300px"></Box>
+        <Collapse in={this.state.deviceConnected} animateOpacity unmountOnExit>
+          <HappinessLevel
+            isPlaying={this.state.recording.mode === "PLAYING"}
+            playbackStartedAt={this.state.playbackStartedAt}
+            playbackDuration={this.getRecordingEndTime()}
+          />
+        </Collapse>
         <Flex direction="row" justifyContent="center">
           <Button
             leftIcon={<CiPlay1 />}

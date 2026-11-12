@@ -5,73 +5,92 @@
 
 **Our app aims to simulate taking input from an EEG device to convert brain signals into music, allowing users to choose their preferred instrument from a list of options.**
 
-# Setting up the project 
+# Setting up the project
 
-## Clone the repository 
+## Prerequisites
 
-1. Open a terminal window and navigate to the directory where you want to clone the project. .
-2. Run the following command: 
-   `git clone https://github.com/Ahed752/Graduation-project-laith
+- Node.js 14 or higher and npm
 
-## Backend setup 
+## Install dependencies
 
-### Prerequisites 
+Run these commands from the repository root:
 
-- Node.js (v14 or higher)
+```powershell
+cd backend
+npm.cmd ci
+cd ..\client2
+npm.cmd ci
+```
 
-### Running the server 
-1. go to the "backend" directory
-2. run `npm install`
-3. run `npm run start:dev`
-4. visit <a href="http:localhost:7070/api">localhost:7070/api</a> to view the documentation of our APIs.
+In PowerShell, use `npm.cmd` if the `npm` command is blocked by the script execution policy. In Command Prompt or other shells, use `npm`.
 
-## Frontend setup 
+## Run locally
 
-### Prerequisites 
+Start each app in a separate terminal:
 
-- Node.js (v14 or higher)
+```powershell
+cd backend
+npm.cmd run start:dev
+```
 
-### Running the frontend 
-1. go to the "client2" directory
-2. run `npm install` (If you get an error, try `npm install --force`)
-3. run `npm start`
-4. visit <a href="http:localhost:3000">localhost:3000/api</a>.
+```powershell
+cd client2
+npm.cmd start
+```
 
-** النسخة العربية**
+Open the frontend at [http://localhost:3000](http://localhost:3000) and the API documentation at [http://localhost:7070/api](http://localhost:7070/api). The backend uses a local SQLite database; no separate database service is required.
 
+If another application is already using port 7070, choose a free port for the backend in its terminal:
 
-** يهدف تطبيقنا إلى محاكاة أخذ المدخلات من جهاز EEG لتحويل إشارات الدماغ إلى موسيقى ، مما يسمح للمستخدمين باختيار أداتهم المفضلة من قائمة الخيارات. **
+```powershell
+$env:PORT = "7071"
+npm.cmd run start:dev
+```
 
-# اقامة المشروع
+Then open the API documentation at [http://localhost:7071/api](http://localhost:7071/api).
 
-## استنساخ المستودع
+# النسخة العربية
 
-1. افتح نافذة طرفية وانتقل إلى الدليل حيث تريد استنساخ المشروع.
-2. قم بتشغيل الأمر التالي:
-    git clone https://github.com/Ahed752/Graduation-project-laith
+# إعداد المشروع
 
-## إعداد الخلفية
+## المتطلبات الأساسية
 
-### المتطلبات الأساسية
+- Node.js الإصدار 14 أو أحدث وnpm
 
-- Node.js (الإصدار 14 أو أعلى)
+## تثبيت الاعتماديات
 
-### تشغيل الخادم
+نفّذ الأوامر التالية من المجلد الرئيسي للمستودع:
 
-1. انتقل إلى دليل "الواجهة الخلفية"
-2. قم بتشغيل "تثبيت npm"
-3. شغّل "npm run start: dev"
-4. قم بزيارة <a href="http:localhost:7070/api"> localhost: 7070 / api </a> لعرض توثيق واجهات برمجة التطبيقات الخاصة بنا.
+```powershell
+cd backend
+npm.cmd ci
+cd ..\client2
+npm.cmd ci
+```
 
-## إعداد الواجهة الأمامية
+في PowerShell استخدم `npm.cmd` إذا منع إعداد تنفيذ البرامج النصية تشغيل أمر `npm`. في موجه الأوامر أو الطرفيات الأخرى استخدم `npm`.
 
-### المتطلبات الأساسية
+## التشغيل محلياً
 
-- Node.js (الإصدار 14 أو أعلى)
+شغّل كل تطبيق في نافذة طرفية منفصلة:
 
-### تشغيل الواجهة الأمامية
+```powershell
+cd backend
+npm.cmd run start:dev
+```
 
-1. انتقل إلى دليل "client2"
-2. شغّل "تثبيت npm" (إذا تلقيت خطأ ، فجرّب "تثبيت npm --force")
-3. قم بتشغيل "بدء npm"
-4. قم بزيارة <a href="http:localhost:3000"> localhost: 3000 / api </a>.
+```powershell
+cd client2
+npm.cmd start
+```
+
+افتح الواجهة الأمامية على [http://localhost:3000](http://localhost:3000) وتوثيق الواجهة البرمجية على [http://localhost:7070/api](http://localhost:7070/api). يستخدم الخادم قاعدة بيانات SQLite محلية ولا يتطلب تشغيل خدمة قاعدة بيانات منفصلة.
+
+إذا كان تطبيق آخر يستخدم المنفذ 7070، اختر منفذاً متاحاً للخادم في نافذته:
+
+```powershell
+$env:PORT = "7071"
+npm.cmd run start:dev
+```
+
+ثم افتح توثيق الواجهة البرمجية على [http://localhost:7071/api](http://localhost:7071/api).
