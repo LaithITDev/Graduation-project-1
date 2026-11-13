@@ -28,9 +28,6 @@ class HttpError extends Error {
 let database: ReturnType<typeof postgres> | undefined;
 
 function getDatabase(): ReturnType<typeof postgres> {
-  if (!process.env.NETLIFY_DB_URL) {
-    throw new Error("Netlify Database is not configured");
-  }
   if (!database) {
     database = postgres(getConnectionString(), { max: 1, connect_timeout: 5 });
   }

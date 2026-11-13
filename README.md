@@ -67,6 +67,8 @@ The Netlify Functions provide `/api/auth/login`, `/api/auth/register`, and `/api
 
 3. Keep the Netlify build base set to `client2` and redeploy. Netlify applies the users-table migration from `client2/netlify/database/migrations`.
 
+The authentication functions obtain the database connection string from `@netlify/database`; you do not need to add a separate database URL environment variable.
+
 The deployed frontend calls the same-origin `/api/auth/...` routes; no `REACT_APP_API_URL` or CORS configuration is needed in production. Existing accounts in the local SQLite database are not copied to Netlify Database and will need to register again.
 
 # النسخة العربية
@@ -128,5 +130,7 @@ npm.cmd run start:dev
    ```
 
 3. اترك مجلد البناء الأساسي في Netlify مضبوطاً على `client2` ثم أعد النشر. ستطبّق Netlify ترحيل جدول المستخدمين من `client2/netlify/database/migrations`.
+
+تحصل دوال المصادقة على رابط قاعدة البيانات من `@netlify/database`، ولا يلزم إضافة متغير بيئة منفصل لرابط قاعدة البيانات.
 
 تتصل الواجهة المنشورة بمسارات `/api/auth/...` على النطاق نفسه، ولا تحتاج في الإنتاج إلى `REACT_APP_API_URL` أو إعداد CORS. لن تُنسخ الحسابات الموجودة في قاعدة SQLite المحلية إلى قاعدة Netlify، لذا سيحتاج المستخدمون إلى التسجيل مجدداً.
